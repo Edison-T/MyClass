@@ -62,7 +62,7 @@ const randomImages = [
 
 LogBox.ignoreAllLogs();
 
-//const Stack = createStackNavigator();
+///const Stack = createStackNavigator();
 const AuthenticationStack = createStackNavigator();
 const AppStack = createStackNavigator();
 const GroupAppStack = createStackNavigator();
