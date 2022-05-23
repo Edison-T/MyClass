@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, KeyboardAvoidingView } from 'react-native';
 import { Button, Input, Image} from "react-native-elements";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView } from 'react-native';
 import Amplify, { Auth, API, graphqlOperation, nav } from 'aws-amplify';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
