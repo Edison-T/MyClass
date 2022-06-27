@@ -1,0 +1,77 @@
+type User @model {
+id: ID! # defines the specific user ID
+name: String! # defines the users' name, duhhhh
+profilePicture: String # defines an image uri for the user. This image uri is first uploaded from the user to our Amazon AWS S3 Storage bucket and is refetched to display this image.
+status: String # defines whether the user is online or not at the present moment.
+isTeacherRole: Boolean # defines whether we give the user a teacher role. This teacher role helps gives this user an option to create classes. No other user can do this.
+lastOnlineAt: AWSTimestamp # defines the timestamp that the user was last online at. e.g "Last online 02:07 P.M"
+serverUser: [ServerUser] @connection(keyName: "byUser", fields: ["id"])
+channelUser: [ChannelUser] @connection(keyName: "byUser", fields: ["id"])
+}
+
+type Server @model {
+id: String!
+serverUsers: [ServerUser] @connection(keyName: "byServer", fields: ["id"])
+categories: [Category] @connection(keyName: "byServer", fields: ["id"])
+}
+    type Category 
+    @model 
+    @key ( 
+    name: "byServer", 
+    fields: ["serverID", "createdAt"]) {
+    id: ID!
+    name: String!
+    serverID: String!
+    server: Server @connection(fields: ["serverID"])
+    channels: [Channel] @connection(keyName: "byCategory", fields: ["id"])
+    }
+        type Channel
+        @model
+        @key (
+        name: "byCategory",
+        fields: ["categoryID", "createdAt"]) {
+        id: ID!
+        name: String!
+        categoryID: ID!
+        category: Category @connection(fields: ["categoryID"])
+        channelUsers: [ChannelUser] @connection(keyName: "byChannel", fields: ["id"])
+        messages: [Message]  @connection(keyName: "byChannel", fields: ["id"])
+        lastMessageID: ID!
+        lastMessage: Message @connection(fields: ["lastMessageID"])
+        }
+            type ChannelUser
+            @model
+            @key (
+            name: "byChannel",
+            fields: ["channelID", "createdAt"]) {
+            id: ID!
+            userID: ID!
+            lastReadMessage: # put Message here. Map message's timestamp. Defines last message read to give the user the number of unseen messages he/she hasn't opened yet for each respective channel.
+            channelID: ID!
+            user: User @connection(fields: ["userID"])
+            channel: Channel @connection(fields: ["channelID"])
+            }
+            type Message
+            @model
+            @key(
+            name: "byChannel",
+            fields: ["channelID", "createdAt"]) {
+            id: ID!
+            createdAt: String!
+            content: String!
+            userID: ID!
+            channelID: ID!
+            user: User @connection(fields: ["userID"])
+            channel: Channel @connection(fields: ["channelID"])
+            }
+
+    type ServerUser
+    @model
+    @key(name: "byUser", fields: ["userID", "serverID"])
+    @key(name: "byServer", fields: ["serverID", "userID"]) {
+    id: ID!
+    userID: ID!
+    serverID: ID!
+    user: User @connection(fields: ["userID"])
+    server: Server @connection(fields: ["serverID"])
+    }
