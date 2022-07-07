@@ -1,0 +1,70 @@
+enum UserType{
+  STUDENT,
+  TEACHER,
+  ADMINISTRATOR
+}
+
+enum ChannelType{
+  PRIVATE,
+  GROUP
+}
+
+type User @model {
+  id: ID! # defines the specific user ID
+  name: String! # defines the users' name, duhhhh
+  profilePicture: String # defines an image uri for the user. This image uri is first uploaded from the user to our Amazon AWS S3 Storage bucket and is refetched to display this image.
+  status: String # defines whether the user is online or not at the present moment.
+  roleType: UserType # determines how much power a user should have in a classroom
+  lastOnlineAt: AWSTimestamp # defines the timestamp that the user was last online at. e.g "Last online 02:07 P.M"
+  servers: [Server] @connection(keyName: "byUser", fields: ["id"])
+  channelUser: [ChannelUser] @connection(keyName: "byUser", fields: ["id"])
+}
+
+type Server @model 
+@key ( name: "byUser", fields: ["id"] ) {
+  id: String!
+  users: [User] @hasMany ( keyName: "" )
+  categories: [Category] @connection(keyName: "byServer", fields: ["id"])
+}
+
+type Category @model 
+@key ( name: "byServer", fields: ["serverID", "createdAt"] ) {
+  id: ID!
+  name: String!
+  serverID: String!
+  server: Server @connection(fields: ["serverID"])
+  channels: [Channel] @connection(keyName: "byCategory", fields: ["id"])
+}
+
+type Channel @model
+@key ( name: "byCategory", fields: ["categoryID", "createdAt"] ) {
+  id: ID!
+  name: String!
+  type: ChannelType,
+  channelUsers: [ChannelUser] @connection(keyName: "byChannel", fields: ["id"])
+  messages: [Message]  @connection(keyName: "byChannel", fields: ["id"])
+  lastMessageID: ID!
+  lastMessage: Message @connection(fields: ["lastMessageID"])
+}
+
+type ChannelUser @model
+@key ( name: "byChannel", fields: ["channelID", "createdAt"] ) {
+  id: ID!
+  userID: ID!
+  # i like this because it actually gives a use to a channel user
+  lastReadMessage: # put Message here. Map message's timestamp. Defines last message read to give the user the number of unseen messages he/she hasn't opened yet for each respective channel.
+  channelID: ID!
+  user: User @connection(fields: ["userID"])
+  channel: Channel @connection(fields: ["channelID"])
+}
+
+type Message @model
+@key( name: "byChannel", fields: ["channelID", "createdAt"] ) {
+  id: ID!
+  createdAt: String!
+  content: String!
+  userID: ID!
+  channelID: ID!
+  user: User @connection(fields: ["userID"])
+  channel: Channel @connection(fields: ["channelID"])
+}
